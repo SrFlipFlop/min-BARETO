@@ -1,8 +1,53 @@
+from os import listdir
+from yaml import load, dump
+from yaml.loader import SafeLoader
+from yaml.dumper import SafeDumper
+from os.path import isfile, dirname, realpath, join
 from argparse import ArgumentParser, BooleanOptionalAction
 
-#TODO
-def autocomplete(project: str) -> None:
-    pass
+def check_vuln_template(template: dict) -> bool:
+    vuln_required_fields = ['name', 'description', 'impact', 'recomendations']
+    for field in vuln_required_fields:
+        if field not in template:
+            print(f'[!] Vulnerability template not valid {template} - Field {field} not found')
+            return False
+    return True
+
+def load_template(path: str) -> dict:
+    if isfile(path) and path.endswith('.yaml'):
+        with open(path, 'r') as f:
+            template = load(f, SafeLoader)
+            if check_vuln_template(template):
+                return template
+
+def get_vuln_templates() -> list:
+    templates = []
+    path = join(dirname(realpath(__file__)), 'templates/vulnerabilities/')
+    for file in listdir(path):
+        file_path = join(path, file)
+        templates.append(load_template(file_path))
+    return templates
+
+def load_project(path: str) -> dict:
+    if isfile(path) and path.endswith('.yaml'):
+        with open(path, 'r') as f:
+            return load(f, SafeLoader)
+
+def autocomplete(path: str) -> None:
+    project = load_project(path)
+    project['vulnerabilities'] = []
+    
+    for template in get_vuln_templates():
+        if template['name'] in project['autocomplete']:
+            vuln = {template['name']: {}}
+            for field in ['description', 'impact', 'recomendations']:
+                vuln[template['name']][field] = template[field]['fields']
+
+            project['vulnerabilities'].append(vuln)
+            print(f'[+] Updated {template["name"]} vulnerability')
+    
+    with open(path, 'w') as f:
+        dump(project, f, SafeDumper)
 
 #TODO
 def generate_report(project: str, template: str) -> None:
