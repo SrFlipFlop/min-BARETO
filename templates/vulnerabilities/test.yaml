@@ -1,0 +1,17 @@
+name: test
+description:
+  text: "Lorem ipsum dolor sit amet, consectetur {url}. Curabitur sem orci, dapibus convallis odio {parameter}, scelerisque dapibus ante. Quisque vel ornare tortor. {image1}"
+  fields:
+    - url
+    - parameter
+    - image1
+
+impact:
+  text: "Ut sed ligula hendrerit, ultrices lacus nec, {url}. Aenean sodales sapien eget bibendum pharetra. Morbi varius feugiat pretium. Nam fringilla ut ex porta efficitur."
+  fields:
+    - url
+
+recomendations:
+  text: "Nullam quis porta nisi, vel porta {client}. Curabitur lacinia orci ac diam sagittis, imperdiet pellentesque justo hendrerit. Quisque suscipit, odio vitae mollis semper, urna lacus bibendum erat, non tincidunt tellus est et lectus."
+  fields:
+    - client
