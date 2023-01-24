@@ -1,5 +1,7 @@
 from os import listdir
 from yaml import load, dump
+from datetime import datetime
+from docxtpl import DocxTemplate
 from yaml.loader import SafeLoader
 from yaml.dumper import SafeDumper
 from os.path import isfile, dirname, realpath, join
@@ -33,25 +35,47 @@ def load_project(path: str) -> dict:
         with open(path, 'r') as f:
             return load(f, SafeLoader)
 
+def merge_template(template: dict, project: dict) -> None:
+    if template['name'] in project['autocomplete']:
+        vuln = {template['name']: {}}
+        for field in ['description', 'impact', 'recomendations']:
+            vuln[template['name']][field] = template[field]['fields']
+
+        project['vulnerabilities'].append(vuln)
+        print(f'[+] Updated {template["name"]} vulnerability')
+
 def autocomplete(path: str) -> None:
     project = load_project(path)
     project['vulnerabilities'] = []
     
     for template in get_vuln_templates():
-        if template['name'] in project['autocomplete']:
-            vuln = {template['name']: {}}
-            for field in ['description', 'impact', 'recomendations']:
-                vuln[template['name']][field] = template[field]['fields']
-
-            project['vulnerabilities'].append(vuln)
-            print(f'[+] Updated {template["name"]} vulnerability')
+        merge_template(template, project)
     
     with open(path, 'w') as f:
         dump(project, f, SafeDumper)
 
 #TODO
-def generate_report(project: str, template: str) -> None:
+def create_executive(project: dict, context: dict) -> None:
     pass
+
+#TODO
+def create_summary(project: dict, context: dict) -> None:
+    pass
+
+#TODO
+def create_vulnerabilities(project: dict, context: dict) -> None:
+    pass
+
+def generate_report(project: str, template: str) -> None: 
+    context = {}
+    project = load_project(project)
+    create_executive(project, context) 
+    create_summary(project, context)
+    create_vulnerabilities(project, context)   
+    
+    doc = DocxTemplate(template)
+    doc.render(context)
+    doc.save(template.replace('.docx', f'_v0.1.docx'))
 
 def main():
     parser = ArgumentParser(description='min-BARETO is a lightweight report generator tool that uses YAML templates for the vulnerabilities.')
